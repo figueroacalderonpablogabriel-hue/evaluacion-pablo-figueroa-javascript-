@@ -18,12 +18,12 @@ class ShoppingCart extends HTMLElement {
       return;
     }
 
-    const map = new Map(catalog.map(p => [p.id, p]));
+    const map = new Map(catalog.map((product) => [product.id, product]));
     const summary = cart.getSummary(catalog);
 
     this.innerHTML = `
       <ul>
-        ${cart.items.map(item => {
+        ${cart.items.map((item) => {
           const product = map.get(item.id);
           if (!product) return "";
           return `
@@ -49,10 +49,11 @@ class ShoppingCart extends HTMLElement {
       </div>
     `;
 
-    this.querySelectorAll("button").forEach(button => {
+    this.querySelectorAll("button").forEach((button) => {
       button.addEventListener("click", () => {
         const action = button.dataset.action;
         const productId = Number(button.dataset.id);
+
         this.dispatchEvent(new CustomEvent("cart-action", {
           detail: { action, productId },
           bubbles: true,
