@@ -1,6 +1,6 @@
 class ShoppingCart extends HTMLElement {
   set cart(value) {
-    this._cart = value;
+    this._cart = value || { items: [] };
     this.render();
   }
 
@@ -10,17 +10,20 @@ class ShoppingCart extends HTMLElement {
   }
 
   render() {
-    if (!this._cart || !this._cart.items || this._cart.items.length === 0) {
+    const cart = this._cart || { items: [] };
+    const catalog = Array.isArray(this._catalog) ? this._catalog : [];
+
+    if (!cart.items || cart.items.length === 0) {
       this.innerHTML = '<div class="empty">Tu carrito está vacío.</div>';
       return;
     }
 
-    const map = new Map(this._catalog.map(p => [p.id, p]));
-    const summary = this._cart.getSummary(this._catalog);
+    const map = new Map(catalog.map(p => [p.id, p]));
+    const summary = cart.getSummary(catalog);
 
     this.innerHTML = `
       <ul>
-        ${this._cart.items.map(item => {
+        ${cart.items.map(item => {
           const product = map.get(item.id);
           if (!product) return "";
           return `
