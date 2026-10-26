@@ -1,32 +1,49 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <header class="header">
-        <div class="header__brand">
-          <h1 class="header__title">TecnoStock</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TecnoStock</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand" aria-label="TecnoStock">
+        <div class="brand__mark">T</div>
+        <div>
+          <p class="brand__eyebrow">Tecnología para tu día a día</p>
+          <h1>TecnoStock</h1>
         </div>
-        <button id="cart-toggle" class="cart-toggle" aria-controls="cart" aria-expanded="false">
-          CARRITO <span id="cart-count" class="badge">0</span>
-        </button>
-      </header>
-    
-      <main class="container">
-    
+      </div>
 
-        <section class="toolbar" aria-label="Búsqueda, filtros y orden">
-          <div class="field field--search">
+      <button id="cart-toggle" class="cart-toggle" aria-label="Abrir carrito" aria-controls="cart-panel" aria-expanded="false">
+        Carrito
+        <span id="cart-badge" class="cart-badge">0</span>
+      </button>
+    </header>
+
+    <main class="layout">
+      <section class="catalog-panel">
+        <div class="toolbar" aria-label="Búsqueda, filtros y ordenamiento">
+          <div class="field field--wide">
             <label for="search">Buscar</label>
-            <input id="search" type="search" placeholder="Nombre o descripción del producto" autocomplete="off">
+            <input id="search" type="search" placeholder="Nombre o descripción" autocomplete="off" />
           </div>
+
           <div class="field">
             <label for="category">Categoría</label>
-            <select id="category"><option value="all">Todas</option></select>
+            <select id="category">
+              <option value="all">Todas</option>
+            </select>
           </div>
+
+          <div class="field field--checkbox">
+            <label for="available-only">
+              <input id="available-only" type="checkbox" />
+              Solo disponibles
+            </label>
+          </div>
+
           <div class="field">
             <label for="sort">Ordenar por</label>
             <select id="sort">
@@ -35,44 +52,43 @@
               <option value="price-desc">Precio: mayor a menor</option>
               <option value="name-asc">Nombre: A-Z</option>
               <option value="name-desc">Nombre: Z-A</option>
-              <option value="rating-desc">Mejor valorados</option>
             </select>
           </div>
-        </section> 
-        <div class="table-header-info">
-            <h2 class="section-title">Productos</h2>
-            <p id="status" class="status" role="status" aria-live="polite"></p>
-          </div>
-      
-          <div class="matrix-head" aria-hidden="true">
-            <span>Vista</span>
-            <span>Categoría</span>
-            <span>Producto</span>
-            <span>Valoración</span>
-            <span>Precio</span>
-            <span>Acción</span>
-          </div>
-      
-          <section id="products" class="grid grid--matrix" aria-label="Lista de productos"></section>
-        </main>
-      
-        <div id="overlay" class="overlay"></div>
-        
-        <aside id="cart" class="cart" aria-label="Carrito de compras">
-          <div class="cart__header">
-            <h2>CARRITO <small>tu carrito</small></h2>
-            <button id="cart-close" class="icon-btn" aria-label="Cerrar carrito">X</button>
-          </div>
-          <ul id="cart-items" class="cart__items"></ul>
-          <div class="cart__footer">
-            <p class="cart__total">TOTAL <strong id="cart-total">$0.00</strong></p>
-            <div class="cart__actions">
-              <button id="cart-clear" class="btn btn--ghost">Vaciar carrito</button>
-              <button id="cart-checkout" class="btn">Finalizar compra</button>
-            </div>
-          </div>
-        </aside>
-      
-    
-</body>
+        </div>
+
+        <div class="section-toolbar">
+          <h2>Catálogo</h2>
+          <button id="clear-filters" class="link-button" type="button">Limpiar filtros</button>
+        </div>
+
+        <p id="catalog-status" class="catalog-status" role="status" aria-live="polite"></p>
+        <product-list id="product-list"></product-list>
+      </section>
+
+      <aside id="cart-panel" class="cart-panel" aria-label="Carrito de compras">
+        <div class="cart-panel__header">
+          <h2>Carrito</h2>
+          <button id="cart-close" class="icon-button" type="button" aria-label="Cerrar carrito">✕</button>
+        </div>
+
+        <shopping-cart id="shopping-cart"></shopping-cart>
+      </aside>
+    </main>
+
+    <section class="order-summary" aria-labelledby="summary-title">
+      <div class="section-toolbar">
+        <h2 id="summary-title">Resumen del pedido</h2>
+      </div>
+
+      <div id="order-summary-content" class="order-summary__content">
+        <p>Tu pedido está vacío.</p>
+      </div>
+
+      <button id="checkout-btn" class="primary-button" type="button">Confirmar pedido</button>
+    </section>
+
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
 </html>
