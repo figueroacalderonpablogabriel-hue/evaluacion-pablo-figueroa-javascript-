@@ -1,32 +1,110 @@
-:root{
-  --bg:#f5f7fb; --surface:#fff; --primary:#1d4ed8; --text:#1f2937; --muted:#6b7280; --line:#e5e7eb; --success:#15803d; --danger:#b91c1c;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
-main{max-width:1200px;margin:20px auto;padding:0 20px}
-section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:20px}
-h1,h2,h3,p{margin:0}
-button,input,select{font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px}
-button{background:var(--primary);color:#fff;border:none;cursor:pointer}
-.filter-box{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}
-.field{display:flex;flex-direction:column;gap:6px}
-.product-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
-product-card{display:block}
-.product-card{border:1px solid var(--line);padding:12px;border-radius:10px;background:#fafafa}
-.product-card h3{font-size:18px;margin-bottom:8px}
-.product-card p{color:var(--muted);margin-bottom:8px}
-.product-card .price{font-weight:bold;font-size:20px;margin:8px 0}
-.product-card .stock{display:inline-block;padding:4px 8px;border-radius:999px;background:#ecfdf5;color:var(--success);font-size:12px}
-.product-card button{width:100%;margin-top:10px;background:var(--primary);color:#fff;border:none}
-shopping-cart{display:block}
-.cart ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
-.cart li{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px}
-.cart-actions{display:flex;align-items:center;gap:6px}
-.cart-actions button{padding:5px 10px;background:#eef2ff;color:#1e3a8a;border:none}
-.summary .row{display:flex;justify-content:space-between;margin:8px 0}
-.total{font-weight:bold;font-size:18px}
-.empty{padding:12px;background:#fafafa;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}
-.toast{position:fixed;right:20px;bottom:20px;background:#111827;color:#fff;padding:12px 16px;border-radius:8px;opacity:0;transform:translateY(10px);transition:0.2s}
-.toast.show{opacity:1;transform:translateY(0)}
-@media (max-width:700px){.filter-box{grid-template-columns:1fr}main{padding:0 12px}}
+[
+  {
+    "id": 101,
+    "name": "Teclado mecánico",
+    "category": "Perifericos",
+    "price": 189900,
+    "stock": 8,
+    "description": "Teclado USB con switches mecánicos para uso diario.",
+    "active": true
+  },
+  {
+    "id": 102,
+    "name": "Mouse gamer",
+    "category": "Perifericos",
+    "price": 129900,
+    "stock": 15,
+    "description": "Mouse ergonómico con 6 botones programables.",
+    "active": true
+  },
+  {
+    "id": 103,
+    "name": "Monitor 24\"",
+    "category": "Monitores",
+    "price": 699000,
+    "stock": 6,
+    "description": "Pantalla Full HD con bordes finos y alta tasa de actualización.",
+    "active": true
+  },
+  {
+    "id": 104,
+    "name": "Auriculares inalámbricos",
+    "category": "Perifericos",
+    "price": 249900,
+    "stock": 11,
+    "description": "Audio envolvente con batería de larga duración.",
+    "active": true
+  },
+  {
+    "id": 105,
+    "name": "SSD 1 TB",
+    "category": "Accesorios",
+    "price": 329900,
+    "stock": 17,
+    "description": "Unidad de almacenamiento rápida y confiable.",
+    "active": true
+  },
+  {
+    "id": 106,
+    "name": "Router Wi‑Fi 5G",
+    "category": "Accesorios",
+    "price": 239900,
+    "stock": 9,
+    "description": "Conectividad estable para oficinas y hogares.",
+    "active": true
+  },
+  {
+    "id": 107,
+    "name": "Webcam HD 1080p",
+    "category": "Accesorios",
+    "price": 179900,
+    "stock": 0,
+    "description": "Cámara para videollamadas y streaming diario.",
+    "active": true
+  },
+  {
+    "id": 108,
+    "name": "Impresora multifuncional",
+    "category": "Suministros",
+    "price": 589000,
+    "stock": 4,
+    "description": "Impresión, escaneo y copia para uso doméstico.",
+    "active": true
+  },
+  {
+    "id": 109,
+    "name": "Cargador USB-C 65W",
+    "category": "Suministros",
+    "price": 89900,
+    "stock": 22,
+    "description": "Cargador rápido para laptops y equipos portátiles.",
+    "active": true
+  },
+  {
+    "id": 110,
+    "name": "Base para laptop",
+    "category": "Accesorios",
+    "price": 159900,
+    "stock": 13,
+    "description": "Mejora la ergonomía y la ventilación del equipo.",
+    "active": true
+  },
+  {
+    "id": 111,
+    "name": "Tableta gráfica",
+    "category": "Perifericos",
+    "price": 449900,
+    "stock": 7,
+    "description": "Herramienta ideal para diseño digital y edición.",
+    "active": false
+  },
+  {
+    "id": 112,
+    "name": "Portátil de oficina",
+    "category": "Monitores",
+    "price": 2899000,
+    "stock": 3,
+    "description": "Equipo ligero para trabajo y estudio con gran autonomía.",
+    "active": true
+  }
+]

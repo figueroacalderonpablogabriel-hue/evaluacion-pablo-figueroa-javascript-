@@ -1,229 +1,476 @@
-import { fetchProducts, formatCurrency } from "./api.js";
-import { Cart } from "./cart.js";
-import { saveCart, loadCart } from "./storage.js";
-import "./components/product-card.js";
-import "./components/product-list.js";
-import "./components/shopping-cart.js";
+:root {
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --primary: #1d4ed8;
+  --primary-dark: #173ea7;
+  --secondary: #e0ebff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --line: #dfe7f1;
+  --success: #15803d;
+  --success-soft: #ecfdf5;
+  --warning: #d97706;
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+  --shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
 
-const state = {
-  products: [],
-  cart: new Cart(),
-  filters: { search: "", category: "all", sort: "featured", availableOnly: false }
-};
+* {
+  box-sizing: border-box;
+}
 
-const productList = document.getElementById("product-list");
-const shoppingCart = document.getElementById("shopping-cart");
-const cartCount = document.getElementById("cart-count");
-const categorySelect = document.getElementById("category");
-const searchInput = document.getElementById("search");
-const sortSelect = document.getElementById("sort");
-const availableOnlyInput = document.getElementById("availableOnly");
-const clearFiltersBtn = document.getElementById("clearFilters");
-const statusEl = document.getElementById("status");
-const subtotalEl = document.getElementById("subtotal");
-const discountEl = document.getElementById("discount");
-const totalEl = document.getElementById("total");
-const toast = document.getElementById("toast");
-const confirmBtn = document.getElementById("confirmOrder");
+html {
+  scroll-behavior: smooth;
+}
 
-init();
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
-async function init() {
-  try {
-    const products = await fetchProducts();
-    state.products = products;
-    fillCategories();
+button,
+input,
+select {
+  font: inherit;
+}
 
-    const storedItems = loadCart();
-    const validStoredItems = storedItems.filter((item) => {
-      const product = products.find((entry) => entry.id === item.id);
-      return product && product.active && item.qty <= product.stock && item.qty > 0;
-    });
+button {
+  cursor: pointer;
+}
 
-    state.cart = new Cart(validStoredItems);
-    bindEvents();
-    renderProducts();
-    renderCart();
-    updateSummary();
-    statusEl.textContent = `Mostrando ${products.length} productos.`;
-  } catch (error) {
-    statusEl.textContent = error.message;
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.app-shell {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 16px 28px;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.section-head {
+  margin-bottom: 18px;
+}
+
+.filter-box {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-weight: 600;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.checkbox-field {
+  justify-content: end;
+}
+
+.checkbox-field input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  align-self: flex-start;
+}
+
+.filter-actions {
+  margin-top: 16px;
+}
+
+.secondary-btn,
+.confirm-btn,
+.product-card button,
+.cart-actions button {
+  border: none;
+  border-radius: 10px;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.secondary-btn,
+.confirm-btn {
+  padding: 10px 16px;
+}
+
+.secondary-btn {
+  background: var(--secondary);
+  color: var(--primary-dark);
+}
+
+.confirm-btn {
+  width: 100%;
+  background: var(--success);
+  color: #fff;
+  margin-top: 16px;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.status-message {
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  display: none;
+  font-weight: 600;
+}
+
+.status-message.visible {
+  display: block;
+}
+
+.status-message.loading {
+  background: #e0f2fe;
+  color: #0c4a6e;
+}
+
+.status-message.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-message.success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.status-message.info {
+  background: #eef2ff;
+  color: #312e81;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+product-list {
+  display: block;
+}
+
+.product-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+product-card {
+  display: block;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  padding: 14px;
+}
+
+.product-card.disabled {
+  opacity: 0.7;
+  background: #f9fafb;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.category-pill,
+.state-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 5px 8px;
+  font-weight: 700;
+}
+
+.category-pill {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.state-pill.ok {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.state-pill.blocked {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.product-card h3 {
+  font-size: 1.1rem;
+}
+
+.product-card p {
+  color: var(--muted);
+  line-height: 1.5;
+  min-height: 72px;
+}
+
+.price {
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.stock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stock {
+  display: inline-block;
+  padding: 4px 8px;
+  background: var(--success-soft);
+  color: var(--success);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.product-card button {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--primary);
+  color: #fff;
+}
+
+.product-card.disabled button {
+  background: #9ca3af;
+}
+
+.cart-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--surface-soft);
+}
+
+.cart-product {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cart-product strong {
+  word-break: break-word;
+}
+
+.cart-product small {
+  color: var(--muted);
+}
+
+.cart-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cart-actions button {
+  padding: 7px 10px;
+  background: var(--secondary);
+  color: var(--primary-dark);
+}
+
+.cart-actions button[data-action="remove"] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.summary-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.total-row {
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.empty {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: #fafafa;
+  padding: 18px 14px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.summary-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-box {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.order-box h3 {
+  margin-bottom: 8px;
+}
+
+.order-box p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.cart-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  background: var(--secondary);
+  color: var(--primary-dark);
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+.summary-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.toast {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: #111827;
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  max-width: min(420px, calc(100vw - 32px));
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 950px) {
+  .content-grid {
+    grid-template-columns: 1fr;
   }
 }
 
-function bindEvents() {
-  searchInput.addEventListener("input", (event) => {
-    state.filters.search = event.target.value.trim().toLowerCase();
-    renderProducts();
-  });
-
-  categorySelect.addEventListener("change", (event) => {
-    state.filters.category = event.target.value;
-    renderProducts();
-  });
-
-  sortSelect.addEventListener("change", (event) => {
-    state.filters.sort = event.target.value;
-    renderProducts();
-  });
-
-  availableOnlyInput.addEventListener("change", (event) => {
-    state.filters.availableOnly = event.target.checked;
-    renderProducts();
-  });
-
-  clearFiltersBtn.addEventListener("click", () => {
-    state.filters = { search: "", category: "all", sort: "featured", availableOnly: false };
-    searchInput.value = "";
-    categorySelect.value = "all";
-    sortSelect.value = "featured";
-    availableOnlyInput.checked = false;
-    renderProducts();
-  });
-
-  productList.addEventListener("add-to-cart", (event) => {
-    const productId = Number(event.detail.productId);
-    const product = state.products.find((item) => item.id === productId);
-    if (!product) return;
-
-    try {
-      state.cart.add(product);
-      saveCart(state.cart);
-      renderCart();
-      updateSummary();
-      showToast(`${product.name} agregado al carrito.`);
-    } catch (error) {
-      showToast(error.message);
-    }
-  });
-
-  shoppingCart.addEventListener("cart-action", (event) => {
-    const { action, productId } = event.detail;
-    const product = state.products.find((item) => item.id === productId);
-    if (!product) return;
-
-    try {
-      if (action === "increase") {
-        const currentItem = state.cart.items.find((item) => item.id === productId);
-        const nextQty = (currentItem ? currentItem.qty : 0) + 1;
-
-        if (!product.active || product.stock <= 0) {
-          throw new Error("Producto no disponible.");
-        }
-
-        if (nextQty > product.stock) {
-          throw new Error("No hay suficiente stock.");
-        }
-
-        state.cart.add(product);
-      }
-
-      if (action === "decrease") {
-        const currentItem = state.cart.items.find((item) => item.id === productId);
-        if (!currentItem) return;
-
-        if (currentItem.qty <= 1) {
-          state.cart.remove(productId);
-        } else {
-          state.cart.update(productId, -1);
-        }
-      }
-
-      if (action === "remove") {
-        state.cart.remove(productId);
-      }
-
-      saveCart(state.cart);
-      renderCart();
-      updateSummary();
-    } catch (error) {
-      showToast(error.message);
-    }
-  });
-
-  confirmBtn.addEventListener("click", () => {
-    if (state.cart.items.length === 0) {
-      showToast("El carrito está vacío.");
-      return;
-    }
-
-    const invalidItems = state.cart.items.filter((item) => {
-      const product = state.products.find((entry) => entry.id === item.id);
-      return !product || !product.active || !Number.isInteger(item.qty) || item.qty < 1 || item.qty > product.stock;
-    });
-
-    if (invalidItems.length > 0) {
-      showToast("El pedido no puede confirmarse porque hay productos inválidos o sin stock suficiente.");
-      return;
-    }
-
-    const summary = state.cart.getSummary(state.products);
-    const orderId = `PED-${Date.now()}`;
-    showToast(`Pedido ${orderId} confirmado. Subtotal: ${formatCurrency(summary.subtotal)}.`);
-    state.cart.clear();
-    saveCart(state.cart);
-    renderCart();
-    updateSummary();
-  });
-}
-
-function fillCategories() {
-  const categories = [...new Set(state.products.map((product) => product.category))];
-  categories.forEach((category) => {
-    const option = document.createElement("option");
-    option.value = category;
-    option.textContent = category;
-    categorySelect.appendChild(option);
-  });
-}
-
-function getFilteredProducts() {
-  let filtered = [...state.products];
-
-  if (state.filters.search) {
-    filtered = filtered.filter((product) => {
-      const text = `${product.name} ${product.description}`.toLowerCase();
-      return text.includes(state.filters.search);
-    });
+@media (max-width: 700px) {
+  .filter-box {
+    grid-template-columns: 1fr;
   }
 
-  if (state.filters.category !== "all") {
-    filtered = filtered.filter((product) => product.category === state.filters.category);
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  if (state.filters.availableOnly) {
-    filtered = filtered.filter((product) => product.active && product.stock > 0);
+  .cart-summary {
+    align-items: flex-start;
+    border-radius: 10px;
   }
-
-  if (state.filters.sort === "price-asc") filtered.sort((a, b) => a.price - b.price);
-  if (state.filters.sort === "price-desc") filtered.sort((a, b) => b.price - a.price);
-
-  return filtered;
-}
-
-function renderProducts() {
-  const filtered = getFilteredProducts();
-  productList.products = filtered;
-  statusEl.textContent = filtered.length ? `Mostrando ${filtered.length} productos.` : "Sin resultados.";
-}
-
-function renderCart() {
-  const totalUnits = state.cart.getTotalUnits();
-  cartCount.textContent = `Carrito: ${totalUnits}`;
-  shoppingCart.cart = state.cart;
-  shoppingCart.catalog = state.products;
-}
-
-function updateSummary() {
-  const summary = state.cart.getSummary(state.products);
-  subtotalEl.textContent = formatCurrency(summary.subtotal);
-  discountEl.textContent = formatCurrency(summary.discount);
-  totalEl.textContent = formatCurrency(summary.total);
-  cartCount.textContent = `Carrito: ${state.cart.getTotalUnits()}`;
-}
-
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2000);
 }

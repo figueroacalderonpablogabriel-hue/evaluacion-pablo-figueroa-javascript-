@@ -4,37 +4,45 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TecnoStock</title>
-    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
-    <header>
-      <h1>TecnoStock</h1>
-      <div id="cart-count">Carrito: 0</div>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Tienda tecnológica</p>
+        <h1>TecnoStock</h1>
+      </div>
+      <div class="cart-summary" aria-live="polite">
+        <span class="summary-label">Carrito</span>
+        <strong id="cartBadge">0 unidades</strong>
+      </div>
     </header>
 
-    <main>
-      <section class="catalog">
-        <h2>Catálogo</h2>
+    <main class="app-shell">
+      <section class="panel filters-panel" aria-labelledby="filters-title">
+        <div class="section-head">
+          <h2 id="filters-title">Búsqueda y filtros</h2>
+        </div>
 
         <div class="filter-box">
           <div class="field">
-            <label for="search">Buscar</label>
-            <input id="search" type="text" placeholder="Nombre o descripción" />
+            <label for="searchInput">Buscar producto</label>
+            <input id="searchInput" type="search" placeholder="Nombre o descripción" />
           </div>
 
           <div class="field">
-            <label for="category">Categoría</label>
-            <select id="category">
+            <label for="categoryFilter">Categoría</label>
+            <select id="categoryFilter">
               <option value="all">Todas</option>
             </select>
           </div>
 
           <div class="field">
-            <label for="sort">Orden</label>
-            <select id="sort">
-              <option value="featured">Destacados</option>
-              <option value="price-asc">Precio ↑</option>
-              <option value="price-desc">Precio ↓</option>
+            <label for="sortBy">Ordenar por</label>
+            <select id="sortBy">
+              <option value="none">Sin orden</option>
+              <option value="price-asc">Precio: menor a mayor</option>
+              <option value="price-desc">Precio: mayor a menor</option>
             </select>
           </div>
 
@@ -42,33 +50,62 @@
             <label for="availableOnly">Solo disponibles</label>
             <input id="availableOnly" type="checkbox" />
           </div>
+        </div>
 
-          <div class="field">
-            <label>&nbsp;</label>
-            <button id="clearFilters" type="button">Limpiar</button>
+        <div class="filter-actions">
+          <button id="clearFiltersBtn" type="button" class="secondary-btn">Limpiar filtros</button>
+        </div>
+      </section>
+
+      <div id="statusMessage" class="status-message" aria-live="polite"></div>
+
+      <div class="content-grid">
+        <section class="panel catalog-panel" aria-labelledby="catalog-title">
+          <div class="section-head">
+            <h2 id="catalog-title">Catálogo</h2>
+          </div>
+          <product-list id="productList"></product-list>
+        </section>
+
+        <aside class="panel cart-panel" aria-labelledby="cart-title">
+          <div class="section-head">
+            <h2 id="cart-title">Carrito</h2>
+          </div>
+          <shopping-cart id="shoppingCart"></shopping-cart>
+        </aside>
+      </div>
+
+      <section class="panel summary-panel" aria-labelledby="summary-title">
+        <div class="section-head">
+          <h2 id="summary-title">Resumen del pedido</h2>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <strong id="subtotalValue">$0</strong>
+          </div>
+          <div class="summary-row">
+            <span>Descuento</span>
+            <strong id="discountValue">$0</strong>
+          </div>
+          <div class="summary-row total-row">
+            <span>Total</span>
+            <strong id="totalValue">$0</strong>
           </div>
         </div>
 
-        <div id="status">Cargando catálogo...</div>
-        <product-list id="product-list"></product-list>
-      </section>
+        <div class="order-box">
+          <h3>Confirmación</h3>
+          <p id="orderDetails">Aún no has realizado un pedido.</p>
+        </div>
 
-      <section class="cart">
-        <h2>Carrito</h2>
-        <shopping-cart id="shopping-cart"></shopping-cart>
-      </section>
-
-      <section class="summary">
-        <h2>Resumen del pedido</h2>
-        <div class="row"><span>Subtotal</span><span id="subtotal">$0</span></div>
-        <div class="row"><span>Descuento</span><span id="discount">$0</span></div>
-        <div class="row total"><span>Total</span><span id="total">$0</span></div>
-        <button id="confirmOrder" type="button" style="margin-top:10px; width:100%;">Confirmar pedido</button>
+        <button id="confirmOrderBtn" type="button" class="confirm-btn">Confirmar pedido</button>
       </section>
     </main>
 
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="./js/app.js"></script>
   </body>
 </html>
