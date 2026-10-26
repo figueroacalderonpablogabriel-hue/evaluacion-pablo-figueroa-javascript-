@@ -1,118 +1,120 @@
 {
     "id": 101,
     "name": "Teclado mecánico",
-    "category": "Perifericos",
+    "category": "",
     "price": 189900,
     "stock": 8,
     "description": "Teclado USB para uso diario",
     "active": true
   }
 
-  {
-    "id": 102,
-    "name": "mad pause",
-    "category": " suministros tecnológicos",
-    "price": 50000,
-    "stock": 5,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
-  {
-    "id": 103,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
-  {
-    "id": 104,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
-  {
-    "id": 105,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
-  {
-    "id": 106,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
-  {
-    "id": 107,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
-  {
-    "id": 108,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
-
-  {
-    "id": 109,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  {
-    "id": 110,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  {
-    "id": 111,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  {
-    "id": 112,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
-  
+  [
+    {
+      "id": 101,
+      "name": "Teclado mecánico RGB",
+      "category": "Perifericos",
+      "price": 189900,
+      "stock": 8,
+      "description": "Teclado USB mecánico para uso diario y gaming",
+      "active": true
+    },
+    {
+      "id": 102,
+      "name": "Mouse óptico inalámbrico",
+      "category": "Perifericos",
+      "price": 65000,
+      "stock": 15,
+      "description": "Mouse ergonómico de alta precisión con receptor USB",
+      "active": true
+    },
+    {
+      "id": 103,
+      "name": "Diadema con micrófono cancelador",
+      "category": "Perifericos",
+      "price": 120000,
+      "stock": 10,
+      "description": "Auriculares circumaurales ideales para videollamadas",
+      "active": true
+    },
+    {
+      "id": 104,
+      "name": "Cámara Web HD 1080p",
+      "category": "Perifericos",
+      "price": 145000,
+      "stock": 5,
+      "description": "Cámara web con micrófono incorporado para streaming",
+      "active": true
+    },
+    {
+      "id": 105,
+      "name": "Base refrigerante para laptop",
+      "category": "Accesorios",
+      "price": 85000,
+      "stock": 12,
+      "description": "Soporte ajustable con ventiladores silenciosos USB",
+      "active": true
+    },
+    {
+      "id": 106,
+      "name": "Hub USB-C 4 en 1",
+      "category": "Accesorios",
+      "price": 95000,
+      "stock": 20,
+      "description": "Adaptador multidispositivo con puertos USB 3.0 y HDMI",
+      "active": true
+    },
+    {
+      "id": 107,
+      "name": "Soporte metálico ajustable para portátil",
+      "category": "Accesorios",
+      "price": 70000,
+      "stock": 14,
+      "description": "Base ergonómica plegable de aluminio",
+      "active": true
+    },
+    {
+      "id": 108,
+      "name": "Estuche rígido organizador de cables",
+      "category": "Accesorios",
+      "price": 35000,
+      "stock": 25,
+      "description": "Bolso portátil para accesorios y periféricos pequeños",
+      "active": true
+    },
+    {
+      "id": 109,
+      "name": "Cartucho de tinta negra HP Original",
+      "category": "Suministros",
+      "price": 75000,
+      "stock": 0,
+      "description": "Consumible de alto rendimiento para impresoras",
+      "active": false
+    },
+    {
+      "id": 110,
+      "name": "Bobina de cable UTP Cat 6 (10m)",
+      "category": "Suministros",
+      "price": 45000,
+      "stock": 25,
+      "description": "Cable de red para conexiones locales estructuradas",
+      "active": true
+    },
+    {
+      "id": 111,
+      "name": "Paño de microfibra y líquido antiestático",
+      "category": "Suministros",
+      "price": 25000,
+      "stock": 30,
+      "description": "Kit de limpieza seguro para pantallas y componentes",
+      "active": true
+    },
+    {
+      "id": 112,
+      "name": "Resma de papel bond tamaño carta (500 hojas)",
+      "category": "Suministros",
+      "price": 28000,
+      "stock": 0,
+      "description": "Papel multipropósito para impresión y notas técnicas",
+      "active": false
+    }
+  ]
