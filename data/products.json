@@ -1,120 +1,102 @@
-{
-    "id": 101,
-    "name": "Teclado mecánico",
-    "category": "",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB para uso diario",
-    "active": true
-  }
 
-  [
     {
       "id": 101,
-      "name": "Teclado mecánico RGB",
+      "name": "Teclado mecánico",
       "category": "Perifericos",
       "price": 189900,
       "stock": 8,
-      "description": "Teclado USB mecánico para uso diario y gaming",
+      "description": "Teclado USB para uso diario con switches suaves.",
       "active": true
     },
     {
       "id": 102,
-      "name": "Mouse óptico inalámbrico",
+      "name": "Mouse gamer",
       "category": "Perifericos",
-      "price": 65000,
-      "stock": 15,
-      "description": "Mouse ergonómico de alta precisión con receptor USB",
+      "price": 129900,
+      "stock": 12,
+      "description": "Mouse ergonómico con siete botones programables.",
       "active": true
     },
     {
       "id": 103,
-      "name": "Diadema con micrófono cancelador",
-      "category": "Perifericos",
-      "price": 120000,
-      "stock": 10,
-      "description": "Auriculares circumaurales ideales para videollamadas",
+      "name": "Monitor 24 pulgadas",
+      "category": "Monitores",
+      "price": 589900,
+      "stock": 5,
+      "description": "Pantalla Full HD para trabajo y entretenimiento.",
       "active": true
     },
     {
       "id": 104,
-      "name": "Cámara Web HD 1080p",
-      "category": "Perifericos",
-      "price": 145000,
-      "stock": 5,
-      "description": "Cámara web con micrófono incorporado para streaming",
+      "name": "Auriculares inalámbricos",
+      "category": "Audio",
+      "price": 249900,
+      "stock": 7,
+      "description": "Audio envolvente con conexión Bluetooth y micrófono.",
       "active": true
     },
     {
       "id": 105,
-      "name": "Base refrigerante para laptop",
+      "name": "Webcam HD",
       "category": "Accesorios",
-      "price": 85000,
-      "stock": 12,
-      "description": "Soporte ajustable con ventiladores silenciosos USB",
+      "price": 169900,
+      "stock": 4,
+      "description": "Cámara para videollamadas y streaming con enfoque automático.",
       "active": true
     },
     {
       "id": 106,
-      "name": "Hub USB-C 4 en 1",
-      "category": "Accesorios",
-      "price": 95000,
-      "stock": 20,
-      "description": "Adaptador multidispositivo con puertos USB 3.0 y HDMI",
+      "name": "Disco SSD 1TB",
+      "category": "Almacenamiento",
+      "price": 439900,
+      "stock": 9,
+      "description": "Unidad sólida de alto rendimiento para carga rápida.",
       "active": true
     },
     {
       "id": 107,
-      "name": "Soporte metálico ajustable para portátil",
-      "category": "Accesorios",
-      "price": 70000,
-      "stock": 14,
-      "description": "Base ergonómica plegable de aluminio",
+      "name": "Router WiFi 6",
+      "category": "Redes",
+      "price": 319900,
+      "stock": 6,
+      "description": "Cobertura estable y segura para varios dispositivos.",
       "active": true
     },
     {
       "id": 108,
-      "name": "Estuche rígido organizador de cables",
-      "category": "Accesorios",
-      "price": 35000,
-      "stock": 25,
-      "description": "Bolso portátil para accesorios y periféricos pequeños",
+      "name": "Silla ergonómica",
+      "category": "Oficina",
+      "price": 699900,
+      "stock": 3,
+      "description": "Silla ajustable con soporte lumbar para largas jornadas.",
       "active": true
     },
     {
       "id": 109,
-      "name": "Cartucho de tinta negra HP Original",
-      "category": "Suministros",
-      "price": 75000,
-      "stock": 0,
-      "description": "Consumible de alto rendimiento para impresoras",
-      "active": false
+      "name": "Adaptador USB-C",
+      "category": "Accesorios",
+      "price": 74900,
+      "stock": 15,
+      "description": "Adaptador de video y carga para portátiles modernos.",
+      "active": true
     },
     {
       "id": 110,
-      "name": "Bobina de cable UTP Cat 6 (10m)",
-      "category": "Suministros",
-      "price": 45000,
-      "stock": 25,
-      "description": "Cable de red para conexiones locales estructuradas",
+      "name": "Impresora multifunción",
+      "category": "Oficina",
+      "price": 899900,
+      "stock": 2,
+      "description": "Impresión, escaneo y copiado para uso doméstico o empresarial.",
       "active": true
     },
     {
       "id": 111,
-      "name": "Paño de microfibra y líquido antiestático",
-      "category": "Suministros",
-      "price": 25000,
-      "stock": 30,
-      "description": "Kit de limpieza seguro para pantallas y componentes",
+      "name": "Mochila para portátil",
+      "category": "Accesorios",
+      "price": 179900,
+      "stock": 0,
+      "description": "Mochila con compartimento acolchado para portátiles de 15.6\".",
       "active": true
     },
-    {
-      "id": 112,
-      "name": "Resma de papel bond tamaño carta (500 hojas)",
-      "category": "Suministros",
-      "price": 28000,
-      "stock": 0,
-      "description": "Papel multipropósito para impresión y notas técnicas",
-      "active": false
-    }
-  ]
+    
+  
