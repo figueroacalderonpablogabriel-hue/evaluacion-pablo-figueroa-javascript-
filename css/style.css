@@ -42,7 +42,7 @@ button{ background:var(--primary); color:#fff; border:none; cursor:pointer; }
 }
 .cart-actions{ display:flex; align-items:center; gap:6px; }
 .cart-actions button{
-  padding:5px 10px; background:#eef2ff; color:#1e3a8a; border:none;
+  padding:5px 10px; background:#eef2ff; color:#ff0800; border:none;
 }
 .summary .row{
   display:flex; justify-content:space-between; margin:8px 0;
