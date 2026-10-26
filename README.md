@@ -1,13 +1,1 @@
-# TecnoStock
-
-## Cómo ejecutar la app
-
-1. Abre una terminal en la raíz del proyecto.
-2. Ejecuta:
-   `python -m http.server 8000`
-3. Abre el navegador en:
-   `http://localhost:8000`
-
-## Nota
-
-Este proyecto es una versión mínima funcional para entrega rápida de evaluación.
+��
