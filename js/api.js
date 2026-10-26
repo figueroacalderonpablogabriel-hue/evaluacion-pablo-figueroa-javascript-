@@ -11,7 +11,16 @@ export async function fetchProducts() {
     throw new Error("El catálogo no tiene el formato esperado.");
   }
 
-  return data.filter((p) => p && typeof p === "object");
+  return data.filter((product) => {
+    if (!product || typeof product !== "object") return false;
+    if (!Number.isInteger(product.id) || product.id <= 0) return false;
+    if (typeof product.name !== "string" || !product.name.trim()) return false;
+    if (typeof product.category !== "string" || !product.category.trim()) return false;
+    if (!Number.isFinite(product.price) || product.price <= 0) return false;
+    if (!Number.isInteger(product.stock) || product.stock < 0) return false;
+    if (typeof product.active !== "boolean") return false;
+    return true;
+  });
 }
 
 export function formatCurrency(value) {

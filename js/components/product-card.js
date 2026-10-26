@@ -6,7 +6,9 @@ class ProductCard extends HTMLElement {
 
   render() {
     if (!this._product) return;
+
     const product = this._product;
+    const isUnavailable = !product.active || product.stock <= 0;
 
     this.innerHTML = `
       <article class="product-card">
@@ -14,11 +16,16 @@ class ProductCard extends HTMLElement {
         <p>${product.description}</p>
         <div class="price">${new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(product.price)}</div>
         <span class="stock">${product.stock} disponibles</span>
-        <button type="button" data-id="${product.id}">Agregar</button>
+        <button type="button" data-id="${product.id}" ${isUnavailable ? "disabled" : ""}>
+          ${isUnavailable ? "No disponible" : "Agregar"}
+        </button>
       </article>
     `;
 
-    this.querySelector("button").addEventListener("click", () => {
+    const button = this.querySelector("button");
+    if (!button || isUnavailable) return;
+
+    button.addEventListener("click", () => {
       this.dispatchEvent(new CustomEvent("add-to-cart", {
         detail: { productId: product.id },
         bubbles: true,

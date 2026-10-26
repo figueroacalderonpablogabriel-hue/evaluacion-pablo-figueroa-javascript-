@@ -8,7 +8,7 @@ import "./components/shopping-cart.js";
 const state = {
   products: [],
   cart: new Cart(),
-  filters: { search: "", category: "all", sort: "featured" }
+  filters: { search: "", category: "all", sort: "featured", availableOnly: false }
 };
 
 const productList = document.getElementById("product-list");
@@ -17,6 +17,7 @@ const cartCount = document.getElementById("cart-count");
 const categorySelect = document.getElementById("category");
 const searchInput = document.getElementById("search");
 const sortSelect = document.getElementById("sort");
+const availableOnlyInput = document.getElementById("availableOnly");
 const clearFiltersBtn = document.getElementById("clearFilters");
 const statusEl = document.getElementById("status");
 const subtotalEl = document.getElementById("subtotal");
@@ -32,7 +33,14 @@ async function init() {
     const products = await fetchProducts();
     state.products = products;
     fillCategories();
-    state.cart = new Cart(loadCart());
+
+    const storedItems = loadCart();
+    const validStoredItems = storedItems.filter((item) => {
+      const product = products.find((entry) => entry.id === item.id);
+      return product && product.active && item.qty <= product.stock && item.qty > 0;
+    });
+
+    state.cart = new Cart(validStoredItems);
     bindEvents();
     renderProducts();
     renderCart();
@@ -59,17 +67,23 @@ function bindEvents() {
     renderProducts();
   });
 
+  availableOnlyInput.addEventListener("change", (event) => {
+    state.filters.availableOnly = event.target.checked;
+    renderProducts();
+  });
+
   clearFiltersBtn.addEventListener("click", () => {
-    state.filters = { search: "", category: "all", sort: "featured" };
+    state.filters = { search: "", category: "all", sort: "featured", availableOnly: false };
     searchInput.value = "";
     categorySelect.value = "all";
     sortSelect.value = "featured";
+    availableOnlyInput.checked = false;
     renderProducts();
   });
 
   productList.addEventListener("add-to-cart", (event) => {
     const productId = Number(event.detail.productId);
-    const product = state.products.find(item => item.id === productId);
+    const product = state.products.find((item) => item.id === productId);
     if (!product) return;
 
     try {
@@ -85,28 +99,46 @@ function bindEvents() {
 
   shoppingCart.addEventListener("cart-action", (event) => {
     const { action, productId } = event.detail;
-    const product = state.products.find(item => item.id === productId);
+    const product = state.products.find((item) => item.id === productId);
     if (!product) return;
 
-    if (action === "increase") {
-      try {
+    try {
+      if (action === "increase") {
+        const currentItem = state.cart.items.find((item) => item.id === productId);
+        const nextQty = (currentItem ? currentItem.qty : 0) + 1;
+
+        if (!product.active || product.stock <= 0) {
+          throw new Error("Producto no disponible.");
+        }
+
+        if (nextQty > product.stock) {
+          throw new Error("No hay suficiente stock.");
+        }
+
         state.cart.add(product);
-      } catch (error) {
-        showToast(error.message);
       }
-    }
 
-    if (action === "decrease") {
-      state.cart.update(productId, -1);
-    }
+      if (action === "decrease") {
+        const currentItem = state.cart.items.find((item) => item.id === productId);
+        if (!currentItem) return;
 
-    if (action === "remove") {
-      state.cart.remove(productId);
-    }
+        if (currentItem.qty <= 1) {
+          state.cart.remove(productId);
+        } else {
+          state.cart.update(productId, -1);
+        }
+      }
 
-    saveCart(state.cart);
-    renderCart();
-    updateSummary();
+      if (action === "remove") {
+        state.cart.remove(productId);
+      }
+
+      saveCart(state.cart);
+      renderCart();
+      updateSummary();
+    } catch (error) {
+      showToast(error.message);
+    }
   });
 
   confirmBtn.addEventListener("click", () => {
@@ -115,9 +147,19 @@ function bindEvents() {
       return;
     }
 
+    const invalidItems = state.cart.items.filter((item) => {
+      const product = state.products.find((entry) => entry.id === item.id);
+      return !product || !product.active || !Number.isInteger(item.qty) || item.qty < 1 || item.qty > product.stock;
+    });
+
+    if (invalidItems.length > 0) {
+      showToast("El pedido no puede confirmarse porque hay productos inválidos o sin stock suficiente.");
+      return;
+    }
+
     const summary = state.cart.getSummary(state.products);
     const orderId = `PED-${Date.now()}`;
-    showToast(`Pedido ${orderId} confirmado.`);
+    showToast(`Pedido ${orderId} confirmado. Subtotal: ${formatCurrency(summary.subtotal)}.`);
     state.cart.clear();
     saveCart(state.cart);
     renderCart();
@@ -126,8 +168,8 @@ function bindEvents() {
 }
 
 function fillCategories() {
-  const categories = [...new Set(state.products.map(p => p.category))];
-  categories.forEach(category => {
+  const categories = [...new Set(state.products.map((product) => product.category))];
+  categories.forEach((category) => {
     const option = document.createElement("option");
     option.value = category;
     option.textContent = category;
@@ -139,14 +181,18 @@ function getFilteredProducts() {
   let filtered = [...state.products];
 
   if (state.filters.search) {
-    filtered = filtered.filter(product => {
+    filtered = filtered.filter((product) => {
       const text = `${product.name} ${product.description}`.toLowerCase();
       return text.includes(state.filters.search);
     });
   }
 
   if (state.filters.category !== "all") {
-    filtered = filtered.filter(product => product.category === state.filters.category);
+    filtered = filtered.filter((product) => product.category === state.filters.category);
+  }
+
+  if (state.filters.availableOnly) {
+    filtered = filtered.filter((product) => product.active && product.stock > 0);
   }
 
   if (state.filters.sort === "price-asc") filtered.sort((a, b) => a.price - b.price);
