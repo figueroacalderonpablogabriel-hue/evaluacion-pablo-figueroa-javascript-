@@ -1,187 +1,35 @@
-export class Cart {
-  constructor(items = []) {
-    this.items = Array.isArray(items) ? items : [];
-  }
+// storage.js
+// Guarda y lee el carrito en localStorage.
+// Solo se guarda el id y la cantidad de cada línea. NUNCA el precio:
+// el precio siempre se toma del catálogo actual.
 
-  get totalUnits() {
-    return this.items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-  }
+const CLAVE = "tecnostock_carrito";
 
-  addProduct(product, qty = 1) {
-    if (!product || typeof product !== "object") {
-      throw new Error("El producto seleccionado no es válido.");
-    }
-
-    if (!product.active || product.stock <= 0) {
-      throw new Error("Este producto no está disponible para agregar al carrito.");
-    }
-
-    const quantity = Number(qty);
-    if (!Number.isInteger(quantity) || quantity < 1) {
-      throw new Error("La cantidad debe ser un entero mayor o igual a 1.");
-    }
-
-    const existingItem = this.items.find((item) => item.id === product.id);
-    const currentQty = existingItem ? Number(existingItem.qty) || 0 : 0;
-    const nextQty = currentQty + quantity;
-
-    if (nextQty > product.stock) {
-      throw new Error(`La cantidad solicitada supera el inventario disponible (${product.stock}).`);
-    }
-
-    if (existingItem) {
-      existingItem.qty = nextQty;
-    } else {
-      this.items.push({ id: product.id, qty: quantity });
-    }
-
-    return this;
-  }
-
-  updateQuantity(productId, newQty) {
-    const id = Number(productId);
-    if (!Number.isInteger(id)) {
-      throw new Error("Identificador de producto inválido.");
-    }
-
-    const quantity = Number(newQty);
-    if (!Number.isInteger(quantity) || quantity < 1) {
-      throw new Error("La cantidad no puede ser negativa ni inválida.");
-    }
-
-    const item = this.items.find((entry) => entry.id === id);
-    if (!item) {
-      throw new Error("El producto no existe en el carrito.");
-    }
-
-    const product = globalThis.__TECNO_STOCK_CATALOG__?.find((entry) => entry.id === id);
-    if (!product || !product.active || product.stock <= 0) {
-      throw new Error("El producto ya no está disponible en el catálogo.");
-    }
-
-    if (quantity > product.stock) {
-      throw new Error(`La cantidad no puede superar el inventario disponible (${product.stock}).`);
-    }
-
-    item.qty = quantity;
-    return this;
-  }
-
-  increase(productId) {
-    const id = Number(productId);
-    if (!Number.isInteger(id)) throw new Error("Producto inválido.");
-
-    const item = this.items.find((entry) => entry.id === id);
-    if (!item) throw new Error("El producto no está en el carrito.");
-
-    const product = globalThis.__TECNO_STOCK_CATALOG__?.find((entry) => entry.id === id);
-    if (!product || !product.active || product.stock <= 0) {
-      throw new Error("Este producto no está disponible para continuar.");
-    }
-
-    if (item.qty + 1 > product.stock) {
-      throw new Error(`La cantidad máxima disponible es ${product.stock}.`);
-    }
-
-    item.qty += 1;
-    return this;
-  }
-
-  decrease(productId) {
-    const id = Number(productId);
-    if (!Number.isInteger(id)) throw new Error("Producto inválido.");
-
-    const item = this.items.find((entry) => entry.id === id);
-    if (!item) throw new Error("El producto no está en el carrito.");
-
-    if (item.qty <= 1) {
-      this.removeProduct(id);
-      return this;
-    }
-
-    item.qty -= 1;
-    return this;
-  }
-
-  removeProduct(productId) {
-    const id = Number(productId);
-    if (!Number.isInteger(id)) throw new Error("Producto inválido.");
-    this.items = this.items.filter((item) => item.id !== id);
-    return this;
-  }
-
-  clear() {
-    this.items = [];
-    return this;
-  }
-
-  getSummary(catalog = []) {
-    const map = new Map(catalog.map((product) => [product.id, product]));
-    let subtotal = 0;
-
-    for (const item of this.items) {
-      const product = map.get(item.id);
-      if (!product || !product.active) continue;
-      const qty = Number(item.qty);
-      if (!Number.isInteger(qty) || qty < 1) continue;
-      subtotal += product.price * qty;
-    }
-
-    const discount = subtotal >= 300000 ? subtotal * 0.1 : 0;
-    return {
-      subtotal,
-      discount,
-      total: subtotal - discount,
-    };
-  }
-
-  toJSON() {
-    return {
-      items: this.items
-        .map((item) => ({ id: Number(item.id), qty: Number(item.qty) }))
-        .filter((item) => Number.isInteger(item.id) && Number.isInteger(item.qty) && item.qty > 0),
-    };
-  }
-}
-
-export function normalizeCartFromStorage(rawCart, catalog = []) {
-  if (!rawCart || typeof rawCart !== "object") return [];
-  if (!Array.isArray(rawCart.items)) return [];
-
-  const map = new Map(catalog.map((product) => [product.id, product]));
-  const validItems = [];
-
-  rawCart.items.forEach((entry) => {
-    const id = Number(entry?.id);
-    const qty = Number(entry?.qty);
-
-    if (!Number.isInteger(id) || !Number.isInteger(qty) || qty < 1) return;
-    const product = map.get(id);
-    if (!product || !product.active || product.stock <= 0) return;
-    if (qty > product.stock) return;
-    validItems.push({ id, qty });
-  });
-
-  return validItems;
-}
-
-export function saveCartToStorage(cart) {
+// Guarda las líneas del carrito. Si falla (almacenamiento lleno o bloqueado), la app sigue funcionando.
+export function guardarCarrito(lineas) {
   try {
-    localStorage.setItem("tecnostock.cart", JSON.stringify(cart.toJSON()));
+    localStorage.setItem(CLAVE, JSON.stringify(lineas));
   } catch (error) {
-    console.error("No se pudo guardar el carrito:", error);
+    console.warn("No se pudo guardar el carrito:", error);
   }
 }
 
-export function loadCartFromStorage(catalog = []) {
+// Lee las líneas guardadas. Si no hay nada, el JSON está dañado o la estructura no es
+// la esperada, devuelve una lista vacía.
+export function leerCarrito() {
   try {
-    const saved = localStorage.getItem("tecnostock.cart");
-    if (!saved) return [];
+    const texto = localStorage.getItem(CLAVE);
+    if (texto === null) return []; // almacenamiento vacío
 
-    const parsed = JSON.parse(saved);
-    return normalizeCartFromStorage(parsed, catalog);
+    const datos = JSON.parse(texto); // puede lanzar error si el JSON está corrupto
+    if (!Array.isArray(datos)) return []; // estructura inesperada
+
+    // Nos quedamos solo con las líneas que tienen id y cantidad enteros
+    return datos.filter(function (linea) {
+      return typeof linea === "object" && linea !== null &&
+             Number.isInteger(linea.id) && Number.isInteger(linea.cantidad);
+    });
   } catch (error) {
-    console.error("El carrito guardado no es válido:", error);
     return [];
   }
 }

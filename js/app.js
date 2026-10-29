@@ -1,352 +1,231 @@
+// app.js
+// Es el "director" de la aplicación: carga el catálogo, aplica filtros,
+// escucha los eventos de los componentes, valida con cart.js y actualiza la pantalla.
 
+import { cargarCatalogo } from "./api.js";
+import * as carrito from "./cart.js";
+import { leerCarrito, guardarCarrito } from "./storage.js";
+import { formatearPesos, normalizar, crearElemento } from "./utils.js";
+
+// Importar los componentes hace que se registren (customElements.define)
 import "./components/product-card.js";
 import "./components/product-list.js";
 import "./components/shopping-cart.js";
 
-import { fetchProducts } from "./api.js";
-import { Cart, normalizeCartFromStorage, saveCartToStorage } from "./cart.js";
+// ---------- Elementos de la página ----------
+const campoBuscar = document.getElementById("buscar");
+const campoCategoria = document.getElementById("categoria");
+const campoOrden = document.getElementById("orden");
+const campoDisponibles = document.getElementById("disponibles");
+const gruposFiltros = document.getElementById("campos-filtros");
+const botonLimpiar = document.getElementById("btn-limpiar");
+const botonReintentar = document.getElementById("btn-reintentar");
+const botonConfirmar = document.getElementById("btn-confirmar");
+const botonCerrarModal = document.getElementById("btn-cerrar-modal");
+const estadoCatalogo = document.getElementById("estado-catalogo");
+const zonaMensajes = document.getElementById("mensajes");
+const textoUnidades = document.getElementById("unidades");
+const listaProductos = document.getElementById("lista-productos");
+const componenteCarrito = document.getElementById("carrito");
+const modal = document.getElementById("modal-pedido");
+const detallePedido = document.getElementById("detalle-pedido");
 
-const productList = document.querySelector("#productList");
-const shoppingCart = document.querySelector("#shoppingCart");
-const cartBadge = document.querySelector("#cartBadge");
-const searchInput = document.querySelector("#searchInput");
-const categoryFilter = document.querySelector("#categoryFilter");
-const sortBy = document.querySelector("#sortBy");
-const availableOnly = document.querySelector("#availableOnly");
-const clearFiltersBtn = document.querySelector("#clearFiltersBtn");
-const statusMessage = document.querySelector("#statusMessage");
-const subtotalValue = document.querySelector("#subtotalValue");
-const discountValue = document.querySelector("#discountValue");
-const totalValue = document.querySelector("#totalValue");
-const orderDetails = document.querySelector("#orderDetails");
-const confirmOrderBtn = document.querySelector("#confirmOrderBtn");
-const toast = document.querySelector("#toast");
+let catalogo = []; // aquí quedan los productos cargados (no se vuelve a pedir al filtrar)
 
-let catalog = [];
-let cart = new Cart();
-let filters = {
-  query: "",
-  category: "all",
-  availableOnly: false,
-  sortBy: "none",
-};
+// ---------- Mensajes ----------
 
-function formatCOP(value) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(Number(value) || 0);
+// Mensaje del catálogo: cargando, error o catálogo vacío
+function mostrarEstado(texto, tipo) {
+  estadoCatalogo.className = "mensaje " + tipo;
+  estadoCatalogo.textContent = (tipo === "error" ? "Error: " : "") + texto;
 }
 
-function showStatus(message, type = "info") {
-  if (!message) {
-    statusMessage.textContent = "";
-    statusMessage.className = "status-message";
-    statusMessage.classList.remove("visible");
-    return;
-  }
-
-  statusMessage.textContent = message;
-  statusMessage.className = `status-message visible ${type}`;
+function limpiarEstado() {
+  estadoCatalogo.className = "mensaje";
+  estadoCatalogo.textContent = "";
 }
 
-function showToast(message, type = "info") {
-  toast.textContent = message;
-  toast.classList.remove("show");
-  void toast.offsetWidth;
-  toast.classList.add("show");
-  toast.dataset.type = type;
-
-  window.clearTimeout(showToast.timeoutId);
-  showToast.timeoutId = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2500);
+// Mensaje de las operaciones del carrito
+function mostrarMensaje(texto, tipo) {
+  zonaMensajes.className = "mensaje " + tipo;
+  zonaMensajes.textContent = (tipo === "error" ? "Error: " : "Listo: ") + texto;
 }
 
-function isValidProduct(product) {
-  if (!product || typeof product !== "object") return false;
-  const id = Number(product.id);
-  const price = Number(product.price);
-  const stock = Number(product.stock);
+// ---------- Inicio ----------
 
-  return (
-    Number.isInteger(id) &&
-    id > 0 &&
-    Number.isFinite(price) &&
-    price > 0 &&
-    Number.isFinite(stock) &&
-    Number.isInteger(stock) &&
-    stock >= 0 &&
-    typeof product.name === "string" &&
-    product.name.trim() &&
-    typeof product.description === "string" &&
-    typeof product.category === "string" &&
-    product.category.trim() &&
-    typeof product.active === "boolean"
-  );
-}
+async function iniciar() {
+  botonReintentar.hidden = true;
+  gruposFiltros.disabled = true;
+  listaProductos.replaceChildren();
+  mostrarEstado("Cargando catálogo...", "info");
 
-function validateCatalog(data) {
-  if (!Array.isArray(data)) {
-    throw new Error("La respuesta del catálogo no tiene el formato esperado.");
-  }
-
-  if (data.length === 0) {
-    return [];
-  }
-
-  const validProducts = data.filter(isValidProduct);
-  if (validProducts.length !== data.length) {
-    throw new Error("Uno o más productos del catálogo son inválidos.");
-  }
-
-  return validProducts;
-}
-
-function renderCategories() {
-  const categories = [...new Set(catalog.map((product) => product.category))].sort();
-  const currentValue = categoryFilter.value || "all";
-  categoryFilter.innerHTML = '<option value="all">Todas</option>';
-
-  categories.forEach((category) => {
-    const option = document.createElement("option");
-    option.value = category;
-    option.textContent = category;
-    if (category === currentValue) option.selected = true;
-    categoryFilter.appendChild(option);
-  });
-
-  if (!categories.includes(currentValue) && currentValue !== "all") {
-    categoryFilter.value = "all";
-    filters.category = "all";
-  }
-}
-
-function getFilteredProducts() {
-  const query = filters.query.trim().toLowerCase();
-  let result = [...catalog];
-
-  if (query) {
-    result = result.filter((product) => {
-      const searchText = `${product.name} ${product.description}`.toLowerCase();
-      return searchText.includes(query);
-    });
-  }
-
-  if (filters.category !== "all") {
-    result = result.filter((product) => product.category === filters.category);
-  }
-
-  if (filters.availableOnly) {
-    result = result.filter((product) => product.active && product.stock > 0);
-  }
-
-  if (filters.sortBy === "price-asc") {
-    result.sort((a, b) => a.price - b.price);
-  } else if (filters.sortBy === "price-desc") {
-    result.sort((a, b) => b.price - a.price);
-  }
-
-  return result;
-}
-
-function renderProducts() {
-  if (!catalog.length) {
-    productList.products = [];
-    return;
-  }
-
-  const filteredProducts = getFilteredProducts();
-  productList.products = filteredProducts;
-}
-
-function updateCartSummary() {
-  const totalUnits = cart.totalUnits;
-  cartBadge.textContent = `${totalUnits} unidad${totalUnits === 1 ? "" : "es"}`;
-
-  const summary = cart.getSummary(catalog);
-  subtotalValue.textContent = formatCOP(summary.subtotal);
-  discountValue.textContent = formatCOP(summary.discount);
-  totalValue.textContent = formatCOP(summary.total);
-  confirmOrderBtn.disabled = cart.items.length === 0;
-}
-
-function renderCart() {
-  globalThis.__TECNO_STOCK_CATALOG__ = catalog;
-  shoppingCart.cart = cart;
-  shoppingCart.catalog = catalog;
-  updateCartSummary();
-}
-
-function persistCart() {
-  saveCartToStorage(cart);
-}
-
-function applyStoredCart() {
-  const stored = normalizeCartFromStorage({ items: JSON.parse(localStorage.getItem("tecnostock.cart") || "{}")?.items || [] }, catalog);
-  if (stored.length) {
-    cart = new Cart(stored);
-    renderCart();
-  }
-}
-
-function loadCatalog() {
-  showStatus("Cargando catálogo...", "loading");
-
-  fetchProducts()
-    .then((data) => {
-      if (!Array.isArray(data)) {
-        throw new Error("La respuesta del catálogo no tiene el formato esperado.");
-      }
-
-      if (data.length === 0) {
-        catalog = [];
-        productList.products = [];
-        showStatus("El catálogo está vacío. No hay productos disponibles.", "info");
-        renderCategories();
-        renderCart();
-        return;
-      }
-
-      catalog = validateCatalog(data);
-      globalThis.__TECNO_STOCK_CATALOG__ = catalog;
-      renderCategories();
-      renderProducts();
-      showStatus("", "info");
-
-      try {
-        const stored = JSON.parse(localStorage.getItem("tecnostock.cart") || "null");
-        const validCart = normalizeCartFromStorage(stored || { items: [] }, catalog);
-        cart = new Cart(validCart);
-      } catch (error) {
-        cart = new Cart();
-      }
-
-      renderCart();
-    })
-    .catch((error) => {
-      catalog = [];
-      productList.products = [];
-      renderCategories();
-      renderCart();
-      showStatus(error.message || "No se pudo cargar el catálogo.", "error");
-    });
-}
-
-function addToCart(productId) {
-  const product = catalog.find((item) => item.id === productId);
-  if (!product) {
-    showToast("Producto no encontrado en el catálogo.", "error");
-    return;
-  }
-
+  // 1. Pedir el catálogo
   try {
-    cart.addProduct(product, 1);
-    persistCart();
-    renderCart();
-    showToast("Producto agregado al carrito.", "success");
+    catalogo = await cargarCatalogo();
   } catch (error) {
-    showToast(error.message, "error");
-  }
-}
-
-function handleCartAction(event) {
-  const { action, productId } = event.detail;
-
-  try {
-    if (action === "increase") {
-      cart.increase(productId);
-    } else if (action === "decrease") {
-      cart.decrease(productId);
-    } else if (action === "remove") {
-      cart.removeProduct(productId);
-    }
-
-    persistCart();
-    renderCart();
-  } catch (error) {
-    showToast(error.message, "error");
-  }
-}
-
-function confirmOrder() {
-  if (!cart.items.length) {
-    showToast("El carrito está vacío. Agrega productos antes de confirmar.", "error");
+    catalogo = [];
+    carrito.definirCatalogo(catalogo);
+    mostrarEstado(error.message, "error");
+    botonReintentar.hidden = false;
+    pintarCarrito(false); // carrito vacío en pantalla, sin tocar lo guardado
     return;
   }
 
-  const invalidItems = cart.items.filter((item) => {
-    const product = catalog.find((entry) => entry.id === item.id);
-    return !product || !product.active || item.qty > product.stock || item.qty < 1;
-  });
+  // 2. Recuperar el carrito guardado (solo se conservan las líneas válidas)
+  carrito.definirCatalogo(catalogo);
+  carrito.restaurarLineas(leerCarrito());
+  pintarCarrito(true);
 
-  if (invalidItems.length) {
-    showToast("Hay productos inválidos o sin stock disponible. Corrige el carrito antes de continuar.", "error");
+  // 3. Catálogo válido pero sin productos
+  if (catalogo.length === 0) {
+    mostrarEstado("El catálogo se cargó correctamente, pero por ahora no tiene productos.", "info");
     return;
   }
 
-  const summary = cart.getSummary(catalog);
-  const orderId = `TS-${Date.now()}-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
-
-  const lines = cart.items
-    .map((item) => {
-      const product = catalog.find((entry) => entry.id === item.id);
-      return `${product.name} x ${item.qty} - ${formatCOP(product.price * item.qty)}`;
-    })
-    .join(" | ");
-
-  orderDetails.innerHTML = `
-    <strong>Pedido ${orderId}</strong><br>
-    <span>${lines}</span><br>
-    <span>Subtotal: ${formatCOP(summary.subtotal)}</span><br>
-    <span>Descuento: ${formatCOP(summary.discount)}</span><br>
-    <span>Total: ${formatCOP(summary.total)}</span>
-  `;
-
-  cart.clear();
-  persistCart();
-  renderCart();
-  showToast(`Pedido ${orderId} confirmado correctamente.`, "success");
+  // 4. Mostrar productos
+  limpiarEstado();
+  llenarCategorias();
+  gruposFiltros.disabled = false;
+  aplicarFiltros();
 }
 
-function bindEvents() {
-  productList.addEventListener("add-to-cart", (event) => {
-    addToCart(event.detail.productId);
-  });
+// Llena el <select> de categorías con las que existen en el catálogo
+function llenarCategorias() {
+  campoCategoria.replaceChildren();
+  campoCategoria.append(new Option("Todas las categorías", "todas"));
 
-  shoppingCart.addEventListener("cart-action", handleCartAction);
-  searchInput.addEventListener("input", (event) => {
-    filters.query = event.target.value;
-    renderProducts();
-  });
-
-  categoryFilter.addEventListener("change", (event) => {
-    filters.category = event.target.value;
-    renderProducts();
-  });
-
-  sortBy.addEventListener("change", (event) => {
-    filters.sortBy = event.target.value;
-    renderProducts();
-  });
-
-  availableOnly.addEventListener("change", (event) => {
-    filters.availableOnly = event.target.checked;
-    renderProducts();
-  });
-
-  clearFiltersBtn.addEventListener("click", () => {
-    filters = { query: "", category: "all", availableOnly: false, sortBy: "none" };
-    searchInput.value = "";
-    categoryFilter.value = "all";
-    sortBy.value = "none";
-    availableOnly.checked = false;
-    renderProducts();
-  });
-
-  confirmOrderBtn.addEventListener("click", confirmOrder);
+  // Set elimina las categorías repetidas
+  const categorias = [...new Set(catalogo.map(function (p) { return p.category; }))];
+  for (const categoria of categorias) {
+    campoCategoria.append(new Option(categoria, categoria));
+  }
 }
 
-bindEvents();
-loadCatalog();
+// ---------- Filtros ----------
+
+// Siempre parte de TODO el catálogo y aplica los 4 controles juntos
+function aplicarFiltros() {
+  const texto = normalizar(campoBuscar.value.trim());
+  const categoria = campoCategoria.value;
+  const soloDisponibles = campoDisponibles.checked;
+  const orden = campoOrden.value;
+
+  // filter deja solo los productos que cumplen TODAS las condiciones
+  const resultado = catalogo.filter(function (p) {
+    const coincideTexto = normalizar(p.name).includes(texto) || normalizar(p.description).includes(texto);
+    const coincideCategoria = categoria === "todas" || p.category === categoria;
+    const coincideDisponible = !soloDisponibles || (p.active && p.stock > 0);
+    return coincideTexto && coincideCategoria && coincideDisponible;
+  });
+
+  // Ordenar por precio (resultado es una lista nueva, no se daña el catálogo original)
+  if (orden === "precio-asc") {
+    resultado.sort(function (a, b) { return a.price - b.price; });
+  } else if (orden === "precio-desc") {
+    resultado.sort(function (a, b) { return b.price - a.price; });
+  }
+
+  listaProductos.productos = resultado;
+}
+
+function limpiarFiltros() {
+  campoBuscar.value = "";
+  campoCategoria.value = "todas";
+  campoOrden.value = "ninguno";
+  campoDisponibles.checked = false;
+  aplicarFiltros();
+}
+
+// ---------- Carrito en pantalla ----------
+
+// Actualiza el carrito, las unidades del encabezado y (si guardar es true) el localStorage
+function pintarCarrito(guardar) {
+  const detalle = carrito.calcularDetalle();
+  componenteCarrito.datos = detalle;
+  textoUnidades.textContent = detalle.unidades;
+  botonConfirmar.disabled = detalle.unidades === 0;
+
+  if (guardar) {
+    guardarCarrito(carrito.obtenerLineasParaGuardar());
+  }
+}
+
+// Muestra el mensaje de una operación y refresca el carrito
+function responder(resultado) {
+  mostrarMensaje(resultado.mensaje, resultado.ok ? "ok" : "error");
+  pintarCarrito(true);
+}
+
+// ---------- Eventos de los componentes ----------
+// Los componentes solo AVISAN. Aquí se decide si la operación es válida (cart.js).
+
+document.addEventListener("agregar-producto", function (evento) {
+  responder(carrito.agregarProducto(evento.detail.id));
+});
+
+document.addEventListener("cambiar-cantidad", function (evento) {
+  responder(carrito.cambiarCantidad(evento.detail.id, evento.detail.cantidad));
+});
+
+document.addEventListener("eliminar-linea", function (evento) {
+  responder(carrito.eliminarLinea(evento.detail.id));
+});
+
+document.addEventListener("vaciar-carrito", function () {
+  responder(carrito.vaciarCarrito());
+});
+
+// ---------- Confirmar pedido ----------
+
+botonConfirmar.addEventListener("click", function () {
+  const resultado = carrito.confirmarPedido();
+
+  if (!resultado.ok) {
+    mostrarMensaje(resultado.mensaje, "error");
+    pintarCarrito(true);
+    return;
+  }
+
+  mostrarPedidoEnModal(resultado.pedido);
+  mostrarMensaje("Pedido " + resultado.pedido.id + " confirmado (simulación).", "ok");
+  pintarCarrito(true); // el carrito ya quedó vacío
+});
+
+// Llena el modal con el resumen del pedido
+function mostrarPedidoEnModal(pedido) {
+  detallePedido.replaceChildren();
+  detallePedido.append(crearElemento("p", "Número de pedido: " + pedido.id));
+
+  const lista = crearElemento("ul");
+  for (const linea of pedido.detalle.lineas) {
+    lista.append(crearElemento("li",
+      linea.nombre + " × " + linea.cantidad + " = " + formatearPesos(linea.subtotal)));
+  }
+  detallePedido.append(lista);
+
+  detallePedido.append(crearElemento("p", "Subtotal: " + formatearPesos(pedido.detalle.subtotal)));
+  detallePedido.append(crearElemento("p", "Descuento: " + formatearPesos(pedido.detalle.descuento)));
+  detallePedido.append(crearElemento("p", "Total: " + formatearPesos(pedido.detalle.total)));
+
+  modal.showModal();
+}
+
+botonCerrarModal.addEventListener("click", function () {
+  modal.close();
+});
+
+// ---------- Eventos de los filtros ----------
+campoBuscar.addEventListener("input", aplicarFiltros);
+campoCategoria.addEventListener("change", aplicarFiltros);
+campoOrden.addEventListener("change", aplicarFiltros);
+campoDisponibles.addEventListener("change", aplicarFiltros);
+botonLimpiar.addEventListener("click", limpiarFiltros);
+botonReintentar.addEventListener("click", iniciar);
+
+// Evita que Enter en el buscador recargue la página
+document.getElementById("filtros").addEventListener("submit", function (e) {
+  e.preventDefault();
+});
+
+// ¡Arrancamos!
+iniciar();
