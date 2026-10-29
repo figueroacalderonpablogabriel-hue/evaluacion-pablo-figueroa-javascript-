@@ -1,47 +1,33 @@
-class ProductCard extends HTMLElement {
-  set product(value) {
-    this._product = value;
+// product-list.js
+// Web Component <product-list>: recibe la lista ya filtrada y crea una <product-card> por producto.
+
+import { crearElemento } from "../utils.js";
+
+class ProductList extends HTMLElement {
+  // Los datos llegan con: lista.productos = [ ... ]
+  set productos(valor) {
+    this._productos = valor;
     this.render();
   }
 
   render() {
-    if (!this._product) return;
+    this.replaceChildren();
+    const productos = this._productos || [];
 
-    const product = this._product;
-    const isAvailable = product.active && product.stock > 0;
-
-    this.innerHTML = `
-      <article class="product-card ${isAvailable ? "available" : "disabled"}">
-        <div class="card-top">
-          <span class="category-pill">${product.category}</span>
-          <span class="state-pill ${isAvailable ? "ok" : "blocked"}">
-            ${isAvailable ? "Disponible" : "No disponible"}
-          </span>
-        </div>
-
-        <h3>${product.name}</h3>
-        <p>${product.description}</p>
-        <div class="price">${new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(product.price)}</div>
-        <div class="stock-row">
-          <span class="stock">${product.stock} disponibles</span>
-        </div>
-        <button type="button" data-id="${product.id}" ${isAvailable ? "" : "disabled"}>
-          ${isAvailable ? "Agregar" : "Agotado"}
-        </button>
-      </article>
-    `;
-
-    const button = this.querySelector("button");
-    if (button) {
-      button.addEventListener("click", () => {
-        this.dispatchEvent(new CustomEvent("add-to-cart", {
-          detail: { productId: product.id },
-          bubbles: true,
-          composed: true,
-        }));
-      });
+    // Si no hay productos que mostrar, avisamos
+    if (productos.length === 0) {
+      this.append(crearElemento("p", "No hay productos que coincidan con los filtros.", "mensaje info"));
+      return;
     }
+
+    const contenedor = crearElemento("div", "", "grid-productos");
+    for (const producto of productos) {
+      const tarjeta = document.createElement("product-card");
+      tarjeta.producto = producto; // le pasamos el dato a la tarjeta
+      contenedor.append(tarjeta);
+    }
+    this.append(contenedor);
   }
 }
 
-customElements.define("product-card", ProductCard);
+customElements.define("product-list", ProductList);

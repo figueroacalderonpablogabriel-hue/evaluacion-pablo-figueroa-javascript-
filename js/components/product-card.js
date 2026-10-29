@@ -1,52 +1,59 @@
-export const STORAGE_KEY = "tecnostock.cart";
+// product-card.js
+// Web Component <product-card>: muestra UN producto y tiene el botón "Agregar".
+// No sabe nada de las reglas del carrito: solo avisa con un evento.
 
-export function formatCurrency(value) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0,
-  }).format(Number(value) || 0);
-}
+import { crearElemento, formatearPesos } from "../utils.js";
 
-export function normalizeCartFromStorage(rawCart, catalog = []) {
-  if (!rawCart || typeof rawCart !== "object") return [];
-  if (!Array.isArray(rawCart.items)) return [];
+class ProductCard extends HTMLElement {
+  // El dato llega con: tarjeta.producto = { ... }
+  set producto(valor) {
+    this._producto = valor;
+    this.render();
+  }
 
-  const map = new Map(catalog.map((product) => [product.id, product]));
-  const validItems = [];
+  get producto() {
+    return this._producto;
+  }
 
-  rawCart.items.forEach((entry) => {
-    const id = Number(entry?.id);
-    const qty = Number(entry?.qty);
-    if (!Number.isInteger(id) || !Number.isInteger(qty) || qty < 1) return;
+  // Dibuja la tarjeta
+  render() {
+    const p = this._producto;
+    if (!p) return;
 
-    const product = map.get(id);
-    if (!product || !product.active || product.stock <= 0) return;
-    if (qty > product.stock) return;
+    this.replaceChildren(); // borra lo anterior
 
-    validItems.push({ id, qty });
-  });
+    const disponible = p.active && p.stock > 0;
 
-  return validItems;
-}
+    // Texto del estado (no depende solo del color)
+    let estado = "Disponible · " + p.stock + " en stock";
+    if (!p.active) estado = "No disponible";
+    else if (p.stock === 0) estado = "Agotado";
 
-export function loadCartFromStorage(catalog = []) {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return [];
+    const tarjeta = crearElemento("article", "", "tarjeta");
+    tarjeta.append(crearElemento("h3", p.name));
+    tarjeta.append(crearElemento("p", p.category, "categoria"));
+    tarjeta.append(crearElemento("p", p.description));
+    tarjeta.append(crearElemento("p", formatearPesos(p.price), "precio"));
+    tarjeta.append(crearElemento("p", estado, "estado-producto"));
 
-    const parsed = JSON.parse(saved);
-    return normalizeCartFromStorage(parsed, catalog);
-  } catch (error) {
-    console.error("El carrito guardado no es válido:", error);
-    return [];
+    const boton = crearElemento("button", "Agregar al carrito");
+    boton.type = "button";
+    boton.setAttribute("aria-label", "Agregar " + p.name + " al carrito");
+    boton.disabled = !disponible; // inactivos o agotados no se pueden agregar
+    boton.addEventListener("click", () => this.pedirAgregar());
+    tarjeta.append(boton);
+
+    this.append(tarjeta);
+  }
+
+  // Emite el evento personalizado. Solo manda el id: el precio NO viaja en el evento.
+  pedirAgregar() {
+    this.dispatchEvent(new CustomEvent("agregar-producto", {
+      detail: { id: this._producto.id },
+      bubbles: true,   // sube por el DOM hasta document
+      composed: true   // atraviesa un posible Shadow DOM
+    }));
   }
 }
 
-export function saveCartToStorage(cart) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart.toJSON()));
-  } catch (error) {
-    console.error("No se pudo guardar el carrito:", error);
-  }
-}
+customElements.define("product-card", ProductCard);
