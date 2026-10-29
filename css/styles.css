@@ -1,110 +1,137 @@
-[
-  {
-    "id": 101,
-    "name": "Teclado mecánico",
-    "category": "Perifericos",
-    "price": 189900,
-    "stock": 8,
-    "description": "Teclado USB con switches mecánicos para uso diario.",
-    "active": true
-  },
-  {
-    "id": 102,
-    "name": "Mouse gamer",
-    "category": "Perifericos",
-    "price": 129900,
-    "stock": 15,
-    "description": "Mouse ergonómico con 6 botones programables.",
-    "active": true
-  },
-  {
-    "id": 103,
-    "name": "Monitor 24\"",
-    "category": "Monitores",
-    "price": 699000,
-    "stock": 6,
-    "description": "Pantalla Full HD con bordes finos y alta tasa de actualización.",
-    "active": true
-  },
-  {
-    "id": 104,
-    "name": "Auriculares inalámbricos",
-    "category": "Perifericos",
-    "price": 249900,
-    "stock": 11,
-    "description": "Audio envolvente con batería de larga duración.",
-    "active": true
-  },
-  {
-    "id": 105,
-    "name": "SSD 1 TB",
-    "category": "Accesorios",
-    "price": 329900,
-    "stock": 17,
-    "description": "Unidad de almacenamiento rápida y confiable.",
-    "active": true
-  },
-  {
-    "id": 106,
-    "name": "Router Wi‑Fi 5G",
-    "category": "Accesorios",
-    "price": 239900,
-    "stock": 9,
-    "description": "Conectividad estable para oficinas y hogares.",
-    "active": true
-  },
-  {
-    "id": 107,
-    "name": "Webcam HD 1080p",
-    "category": "Accesorios",
-    "price": 179900,
-    "stock": 0,
-    "description": "Cámara para videollamadas y streaming diario.",
-    "active": true
-  },
-  {
-    "id": 108,
-    "name": "Impresora multifuncional",
-    "category": "Suministros",
-    "price": 589000,
-    "stock": 4,
-    "description": "Impresión, escaneo y copia para uso doméstico.",
-    "active": true
-  },
-  {
-    "id": 109,
-    "name": "Cargador USB-C 65W",
-    "category": "Suministros",
-    "price": 89900,
-    "stock": 22,
-    "description": "Cargador rápido para laptops y equipos portátiles.",
-    "active": true
-  },
-  {
-    "id": 110,
-    "name": "Base para laptop",
-    "category": "Accesorios",
-    "price": 159900,
-    "stock": 13,
-    "description": "Mejora la ergonomía y la ventilación del equipo.",
-    "active": true
-  },
-  {
-    "id": 111,
-    "name": "Tableta gráfica",
-    "category": "Perifericos",
-    "price": 449900,
-    "stock": 7,
-    "description": "Herramienta ideal para diseño digital y edición.",
-    "active": false
-  },
-  {
-    "id": 112,
-    "name": "Portátil de oficina",
-    "category": "Monitores",
-    "price": 2899000,
-    "stock": 3,
-    "description": "Equipo ligero para trabajo y estudio con gran autonomía.",
-    "active": true
-  }
-]
+/* ---------- Colores y base ---------- */
+:root {
+  --azul: #1d4ed8;
+  --gris: #f3f4f6;
+  --borde: #d1d5db;
+  --texto: #111827;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: var(--texto);
+  line-height: 1.4;
+}
+
+main { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+
+/* Texto solo para lectores de pantalla */
+.solo-lectores {
+  position: absolute;
+  left: -9999px;
+}
+
+/* ---------- Cabecera ---------- */
+.cabecera {
+  background: var(--azul);
+  color: #fff;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.cabecera h1 { margin: 0; font-size: 1.6rem; }
+.cabecera p { margin: 0; }
+
+/* ---------- Botones y campos ---------- */
+button {
+  cursor: pointer;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--azul);
+  background: #fff;
+  color: var(--azul);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+button.principal { background: var(--azul); color: #fff; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Foco visible para quien navega con teclado */
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+input[type="search"], select {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+}
+
+/* ---------- Filtros ---------- */
+fieldset {
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+.campo label { display: block; margin-bottom: 0.25rem; font-weight: bold; }
+.campo-check { display: flex; gap: 0.5rem; align-items: center; }
+.campo-check label { margin: 0; }
+
+/* ---------- Mensajes (no dependen solo del color: llevan texto "Error:") ---------- */
+.mensaje { padding: 0.6rem 0.8rem; border-left: 6px solid transparent; border-radius: 4px; }
+.mensaje:empty { padding: 0; border: 0; }
+.mensaje.error { background: #fee2e2; border-color: #b91c1c; color: #7f1d1d; }
+.mensaje.ok    { background: #dcfce7; border-color: #166534; color: #14532d; }
+.mensaje.info  { background: #e0f2fe; border-color: #0369a1; color: #0c4a6e; }
+
+/* ---------- Distribución principal ---------- */
+.contenido {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Pantallas estrechas: una sola columna */
+@media (max-width: 800px) {
+  .contenido { grid-template-columns: 1fr; }
+}
+
+/* ---------- Catálogo ---------- */
+product-list, product-card, shopping-cart { display: block; }
+
+.grid-productos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.tarjeta {
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.tarjeta h3 { margin: 0; }
+.tarjeta .categoria { color: #4b5563; font-size: 0.9rem; margin: 0; }
+.tarjeta .precio { font-weight: bold; font-size: 1.1rem; margin: 0; }
+.tarjeta button { margin-top: auto; }
+.estado-producto { font-weight: bold; margin: 0; }
+
+/* ---------- Carrito ---------- */
+.panel-carrito { background: var(--gris); padding: 1rem; border-radius: 8px; }
+.lineas { list-style: none; padding: 0; margin: 0 0 1rem 0; }
+.linea { border-bottom: 1px solid var(--borde); padding: 0.6rem 0; display: grid; gap: 0.3rem; }
+.controles { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.totales { margin: 0 0 1rem 0; }
+.totales div { display: flex; justify-content: space-between; padding: 0.2rem 0; }
+.totales .total { font-weight: bold; font-size: 1.2rem; border-top: 2px solid var(--texto); }
+.panel-carrito button.principal { width: 100%; margin-top: 0.5rem; }
+
+/* ---------- Modal ---------- */
+dialog { max-width: 500px; width: 90%; border: 2px solid var(--azul); border-radius: 10px; }
+dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+.aviso { font-style: italic; }
