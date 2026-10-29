@@ -1,4 +1,7 @@
+// utils.js
+// Funciones pequeñas que se reutilizan en varios archivos.
 
+// Convierte un número a pesos colombianos. Ej: 189900 -> "$ 189.900"
 export function formatearPesos(valor) {
   return new Intl.NumberFormat("es-CO", {
     style: "currency",
